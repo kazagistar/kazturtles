@@ -1,0 +1,113 @@
+function create(dimentions)
+  local new = {}
+  new.dims = dimentions
+  -- Minimum and maximum only store upper bounds for the values within
+  new.minimum = {}
+  new.maximum = {}
+  -- Easiest way to keep count of the number of items within
+  new.size = 0
+  return new
+end
+
+function set(array, value, ...)
+  -- Dig down through the nested levels of arrays
+  for i=1,array.dims-1 do
+    -- Check to see if we should expand the ranges
+    if array.size==0 or arg[i] > array.maximum[i] then
+      array.maximum[i] = arg[i]
+    end
+    if array.size==0 or arg[i] < array.minimum[i] then
+      array.minimum[i] = arg[i]
+    end
+    
+    if array[arg[i]] == nil then
+      array[arg[i]] == {}
+    end
+    array = array[arg[i]]
+  end
+  
+  array[arg[array.dims]] = value
+  array.size = array.size + 1
+end
+
+
+function get(array, index ...)
+  -- Dig down through the nested levels of arrays
+  for i=1,array.dims-1 do
+    if array[arg[i]] == nil then
+      return nil
+    end
+    array = array[arg[i]]
+    
+  return array[arg[array.dims]]
+end
+
+function remove(array, index, ...)
+  if array[index] == nil then return end
+  if next(arg) == nil then
+    table.remove(array,index)
+    array.size = array.size - 1
+  else
+    remove(array[index], unpack(args))
+    -- If a table is empty, remove it from its parent table
+    if type(array[index])=="table" and next(array[index])==nil then
+      table.remove(array,index)
+    end
+  end
+end
+
+
+-- I dont really think this function needs to exists (because you can just array.size), but just to be back compatible...
+function size(array)
+  return array.size
+end
+
+
+-- Recursive deep-copy utility function
+function copy(array)
+  if type(array) ~= "table" then return array end
+  local new = {}
+  for k,v in pairs(t) do
+    new[k] = copy(v)
+  end
+  return new
+
+
+-- Here is where the real magic begins... slices galore!
+-- Imagine you have a 3 dimentional matrix. The parameters to this function are "slice(array, min_x, max_x, min_y, max_y, min_z, max_z)"
+-- This returns a new matrix, only with everything outside the designated area
+function slice(array, ...)
+  local new, size = recursiveslice(array, unpack(arg))
+  new.size = size
+  new.minimum = {}
+  new.maximum = {}
+  new.dims = array.dims
+  for k,v in arg do
+    if k%2=1 then -- odd numbers are minimums
+      table.insert(array.minimum, v)
+    else
+      table.insert(array.maximum, v)
+    end
+  end
+
+local function recursiveslice(array, min, max, ...)
+  if type(array) ~= "table" then return array, 1 end
+  local new = {}
+  local size, sizesum = 0
+  for k,v in pairs(t) do
+    if type(k) ~= "number" then break end
+    if k >= min and k <= max then
+      new[k], size = copy(v, unpack(arg))
+      sizesum = sizesum + size
+    end
+  end
+  return new, sizesum
+
+
+-- Copies the values of one array onto another
+function merge(destination, source, depth)
+  local new = copy(destination)
+  local added, addedsum = 0
+  for k,v in pairs(source) do
+    depth != 1
+      

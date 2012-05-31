@@ -1,0 +1,18 @@
+The idea is to have a persistant event-based OS.
+It persistantly stores a list of currently running modules.
+When it boots up, it runs the "onReboot()" of each module, allowing the module to do any cleanup it needs.
+When it recieves an event, it runs the handler for any module set to recieve that event, in the order that they were registered.
+Modules can create events, which are put on the stack.
+Modules can call each other directly, but preferably send events
+
+Event modules:
+Networking
+CommandStack
+Movement
+Screen
+
+Support modules:
+Persistance
+Mover
+
+Volcano at 250, -1000
